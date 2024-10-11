@@ -1245,6 +1245,9 @@ def iterparse(source, events=None, parser=None):
             if it is not None:
                 it.root = root
         finally:
+            if not pullparser._closed:
+                pullparser.close()
+
             if close_source:
                 source.close()
 
@@ -1277,6 +1280,7 @@ class XMLPullParser:
 
         self._events_queue = collections.deque()
         self._parser = _parser or XMLParser(target=TreeBuilder())
+        self._closed = False
         # wire up the parser for event reporting
         if events is None:
             events = ("end",)
@@ -1296,6 +1300,7 @@ class XMLPullParser:
         # iterparse needs this to set its root attribute properly :(
         root = self._parser.close()
         self._parser = None
+        self._closed = True
         return root
 
     def close(self):
